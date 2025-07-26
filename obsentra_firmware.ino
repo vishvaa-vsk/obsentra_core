@@ -19,7 +19,7 @@
 
 // Pin Definitions
 #define DHT_PIN 4
-#define FLAME_PIN 34
+#define FLAME_PIN 5
 #define MQ2_PIN 35
 
 // Sensor Types
