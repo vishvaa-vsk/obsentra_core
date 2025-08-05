@@ -3,12 +3,17 @@ import cors from 'cors';
 import os from 'os';
 import { WebSocketServer } from 'ws';
 import http from 'http';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 let selectedSensor = "NONE";
 let clients = new Set(); // Store connected WebSocket clients
@@ -52,6 +57,11 @@ app.get("/", (req, res) => {
   });
 });
 
+// GET /test — Serve WebSocket test page
+app.get("/test", (req, res) => {
+  res.sendFile(__dirname + '/websocket-test.html');
+});
+
 // POST /sensor-data — Receive sensor readings from ESP32
 app.post("/sensor-data", (req, res) => {
   const { sensor, value } = req.body;
@@ -77,8 +87,12 @@ const wss = new WebSocketServer({
   path: '/' // Accept connections on root path
 });
 
+console.log('WebSocket Server initialized on path: /');
+
 wss.on("connection", (ws, req) => {
-  console.log(`WebSocket Client Connected from ${req.socket.remoteAddress}`);
+  const clientIP = req.socket.remoteAddress;
+  console.log(`✅ WebSocket Client Connected from ${clientIP}`);
+  console.log(`   Connection headers:`, req.headers);
   clients.add(ws);
 
   // Send current sensor status immediately
